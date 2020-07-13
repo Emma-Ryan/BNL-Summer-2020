@@ -1,6 +1,5 @@
 %%This function requires the extended_gcd.m file, which may be found in the 
-%%Week-2 folder, and the mod_inv.m file, which may be found in the
-%%RSA-Exercise folder.
+%%Week-2 folder.
 
 function RSA_encryption = RSA_encrypt(p, q, m)
     
@@ -19,17 +18,25 @@ function RSA_encryption = RSA_encrypt(p, q, m)
     primes_index = find(primes == 1); 
     e_index = randi(length(primes_index));
     e = primes_index(e_index);
+    
     if e ~= 2
         e = primes_index(e_index);
+    else
+        error('The prime integer 2 was randomly selected for e. Please run again.')
     end
         
     %%This completes the generation of the public key.
     
     %%Generating the private key.
-    d = mod_inv(e, phi_n);
+    d_array = extended_gcd(e, phi_n);
+    d = d_array(2);
+    
+    if d_array(2) < 0
+        d = phi_n + d_array(2);
+    end
     
     %%Generating the cyphertext output.
-    c = mod((m^e), n);
+    c = powermod(m, e, n);
     
     RSA_encryption = [n, e, d, c];
     

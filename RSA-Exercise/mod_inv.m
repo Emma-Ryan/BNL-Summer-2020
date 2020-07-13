@@ -9,7 +9,7 @@
 function l = mod_inv(a, m)  
     l_array = extended_gcd(a, m);
     if l_array(1) ~= 1
-        disp('No modular inverse')
+        error('No modular inverse')
     else
         k = l_array(2);
         l = mod(k, m);
