@@ -10,6 +10,7 @@ classdef BQF
             val3 = val3/g;
             val4 = val4/g;
         end
+        
         function [val1, val2, val3, val4, val5] = BQF_reduce_2(val1, val2, val3, val4, val5)
             g = gcd(abs(val1), gcd(abs(val2), gcd(abs(val3), gcd(abs(val4), abs(val5)))));
             val1 = val1/g;
@@ -18,19 +19,23 @@ classdef BQF
             val4 = val4/g;
             val5 = val5/g;
         end
+        
         function BQF_output = BQF_construction(a, r, s, n)
-            int64 a; int64 r; int64 s; int64 n;
+            a = int64(a); r = int64(r); s = int64(s); n = int64(n);
             
             BQF_output = [a, r, s, n];
         end
+        
         function out_thisBQF = BQF_create_child(a, r, s, b, c, n)
-            int64 a; int64 r; int64 s; int64 n;
+            a = int64(a); r = int64(r); s = int64(s); n = int64(n);
             
             %%Step 1: Skip each trivial rejection
             num = n - r * s - b * c - b * s - c * r;
             thisBQF = BQF_construction(a, (r + b), (s + c), n);
             if mod(num, thisbQF(1)) ~= 0
                 ~thisBQF;
+                
+                out_thisBQF = [];
             end
             n1 = num/thisBQF(1);
             
@@ -75,39 +80,41 @@ classdef BQF
             %%Change the index of vector list- do this in the AERISBQ code
             %%itself.
         end
-        function BQF_create_children(a, r, s, n)
-            BQF_create_child(a, r, s, 0, 0, n);
-            BQF_create_child(a, r, s, a, a, n);
-            BQF_create_child(a, r, s, a, 0, n);
-            BQF_create_child(a, r, s, 0, a, n);
-        end
-        function BQF_remove_permutations(BQF_v)
-            dups = py.tuple(int, int);
-            i = [];
-            while size(i) < size(v1) 
-                r = v1(2);
-                s = v1(3);
-                if r > s
-                    swap(v1, v2);
-                    v1(2) = r;
-                    v1(3) = s;
-                    %%If we change this to a matrix, fix this so matrix
-                    %%index increases.
-                end
-                found = false;
-                while size(j) ~= found && j < dups
-                    if dups(j,1) == r && dups(j,2) && s %%Make matrix of dups.
-                        found = true;
-                    end
-                    if found
-                        clear(v1)
-                        i = i - 1;
-                        v1(i) = [];
-                    else
-                        dups(end + 1) = py.tuple(r,s);
-                    end
+        
+        function out_theseBQFs = BQF_create_children(a, r, s, n)
+            out_theseBQFs(1, 1:4) = BQF_create_child(a, r, s, 0, 0, n);
+            out_theseBQFs(2, 1:4) = BQF_create_child(a, r, s, a, a, n);
+            out_theseBQFs(3, 1:4) = BQF_create_child(a, r, s, a, 0, n);
+            out_theseBQFs(4, 1:4) = BQF_create_child(a, r, s, 0, a, n);
+            
+            for i = 1:4
+                if isempty(out_theseBQFs(i, 1:4)) == true
+                    out_theseBQFs(i, :) = [];
                 end
             end
+        end
+        
+        function fixed_BQFs_final = BQF_remove_permutations(v2, l)
+            r(l) = zeros(l, 3);
+            s(l) = zeros(l, 3);
+            
+            dups = v2(1:l, 1:3);
+            
+            for l = 1:dups(end) 
+                r(l) = dups(l, 2);
+                s(l) = dups(l, 3);
+                if r(l) > s(l)
+                    swap(r(l), s(l));
+                    dups(l, 2) = r(l);
+                    dups(l, 3) = s(l);
+                end
+                
+                if dups(l, 2) == dups(:, 2) && dups(l, 3) == dups(:, 3)
+                    dups(l, :) = [];
+                end
+            end
+            
+            fixed_BQFs_final(1:dups(end), 1:3) = dups(1:dups(end), 1:3);
         end
     end
 end
